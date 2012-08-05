@@ -1,0 +1,12 @@
+<apex:page controller="RemoteCalcEngineController" >
+    <apex:form >
+        <apex:pageBlock title="Remote Calc Engine Testing" >
+            <apex:pageBlockSection columns="1" >
+                <apex:inputTextArea label="Formula" value="{!formula}" rows="12" cols="60"/>
+                <apex:inputCheckbox label="isRunning" value="{!isRunning}"/>
+                <apex:commandButton value="Execute Formula" action="{!calculateFormula}"/>
+                <apex:inputTextArea label="Results" value="{!response}" rows="6" cols="60" />
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
