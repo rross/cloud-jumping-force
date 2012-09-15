@@ -1,6 +1,6 @@
 @isTest
 private class RemoteCalcEngineTest {
-	private static final String API_ENDPIONT = 'http://foo.com';
+	private static final String API_ENDPOINT = 'http://foo.com';
 	
 	static testMethod void testCalcEngineWithoutCustomSettings()
 	{
@@ -19,7 +19,7 @@ private class RemoteCalcEngineTest {
 	
     static testMethod void testCalcEngineSuccess() 
     {
-    	addCustomSetting(API_ENDPIONT);
+    	TestDataHelper.addCustomSetting(API_ENDPOINT);
     	
     	RemoteCalcEngine.CALLOUT = new MockRemoteCalcEngine( MockRemoteCalcEngine.MockResult.ReturnSuccess, '10');
 
@@ -34,7 +34,7 @@ private class RemoteCalcEngineTest {
     
     static testMethod void testCalcEngineFailure()
     {
-    	addCustomSetting(API_ENDPIONT);
+    	TestDataHelper.addCustomSetting(API_ENDPOINT);
     	
     	RemoteCalcEngine.CALLOUT = new MockRemoteCalcEngine( MockRemoteCalcEngine.MockResult.ReturnFailure, 'an error occurred');
 
@@ -55,7 +55,7 @@ private class RemoteCalcEngineTest {
     
     static testMethod void testCalcEngineException()
     {
-    	addCustomSetting(API_ENDPIONT);
+    	TestDataHelper.addCustomSetting(API_ENDPOINT);
     	
     	RemoteCalcEngine.CALLOUT = new MockRemoteCalcEngine( MockRemoteCalcEngine.MockResult.ThrowAnException, 'Blamo Exception!');
 
@@ -83,15 +83,5 @@ private class RemoteCalcEngineTest {
 		}  	
     }
     
-    private static void addCustomSetting(String apiEndpoint)
-    {
-    	User thisUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() ];
-    	System.runAs(thisUser)
-    	{
-    		RemoteCalcEngineCustomSettings__c rcecs = new RemoteCalcEngineCustomSettings__c();
-    		rcecs.API_Endpoint__c = apiEndpoint;
-    		
-    		insert rcecs;	
-    	}
-    }
+
 }

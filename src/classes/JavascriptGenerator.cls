@@ -39,6 +39,100 @@ public with sharing class JavascriptGenerator
 		this.jsonFieldName = jsonFieldName;
 	}
 
+	public String buildData(String variableName, List<SObject> records)
+	{
+		if (records == null || records.size() == 0)
+		{
+			System.debug('ERROR: No data provided.');
+			return null;
+		}
+
+		// we need to get the sObjectName 
+		// and save the mapping for later use when we're ready 
+		// to actually call the method with data in the correct
+		// order...
+		Schema.SObjectType sobjType = records[0].getSObjectType();
+		Schema.DescribeSObjectResult sobjResult = sobjType.getDescribe();
+		String sobjectName = sobjResult.getName();		
+		System.debug('saving sobjectName: '+sobjectName+' as variable '+variableName);
+		this.variableMap.put(sobjectName, variableName);
+
+		this.numRecords = records.size();
+
+		String typeDeclaration = defineSobjectWithParams(records[0]);
+
+		String dataDeclaration = '';
+
+		if (numRecords == 1)
+		{
+			dataDeclaration = 'var ' + variableName + ' = new ' + sObjectName + buildDataDeclaration(records[0]);	
+		}
+		else
+		{
+			dataDeclaration = 'var ' + variableName + ' = [];\n';
+			Integer index = 0;
+			Integer chunkIndex = 0;
+			String closeInterimMethod = '';
+			for(Sobject rec : records)
+			{
+				if (Math.mod(index,MAX_CHUNK_SIZE) == 0)
+				{
+					dataDeclaration = dataDeclaration + closeInterimMethod + '\nfunction ' +  DATA_CHUNK_METHOD_NAME_PREFIX + chunkIndex + '()\n{\n';
+					closeInterimMethod = '}\n';
+					chunkIndex++;
+				}
+				dataDeclaration = dataDeclaration + '   ' + variableName + '['+ index + '] = new ' + sObjectName + buildDataDeclaration(rec) + '\n';
+				index++;
+			}
+
+			dataDeclaration = dataDeclaration + closeInterimMethod;
+
+			numberOfDataChunks = chunkIndex;
+		}
+
+		return typeDeclaration + '\n' + dataDeclaration + '\n';		
+	}
+
+	public String buildCallTheJavascriptFunction(String functionName)
+	{
+		// if there is only one record, we call the function directly
+		if (this.numRecords == 1)
+			return functionName + buildFunctionCall(null) + ';';
+		else
+		{
+			// 
+			// otherwise we need to wrapper class that loops through the records
+			// 
+			String arrayHelperFunctionName = functionName + 'ArrayHelper';
+
+			String dataChunking = '';
+			for(Integer i=0;i< numberOfDataChunks;i++)
+			{
+				dataChunking = dataChunking + '   ' + DATA_CHUNK_METHOD_NAME_PREFIX + i + '();\n';
+			}
+
+			String javaScript = 
+			       'function ' + arrayHelperFunctionName + '(recs)\n{\n' +
+			       dataChunking + 
+				   '   recs.forEach(function(x, idx)\n' +
+				   '   {\n' +
+				   '      x.' + fieldForAnswer + ' = ' + functionName + buildFunctionCall('x') + ';\n' +
+				   '   });\n' +
+				   '\n' +
+				   '   return recs;\n' + 
+				   '}\n' + 
+
+				   '\n' +
+				   'var XXfinalCalcResultXX = ' + arrayHelperFunctionName + buildFunctionCall(null) + ';\n' +
+				   '\n' + 
+				   'JSON.stringify(XXfinalCalcResultXX);\n';
+
+			return javaScript;    
+		}
+	}
+
+	// use this method to create a Javascript definition of a class 
+	// that initializes the JavaScript fields to the field values within the sObject
 	public static String createJavascriptClassFromSObject(SObject anObject)
 	{
 		Schema.SObjectType sobjType = anObject.getSObjectType();
@@ -69,6 +163,8 @@ public with sharing class JavascriptGenerator
 		return javascriptClass;					
 	}
 
+	// Use this method to generate a JavaScript object from an SObject using only
+	// the name of the sobject. Each of the fields will be set to null
 	public static String createJavascriptClassFromSObjectByName(String sobjectName)
 	{
 		// get a map of all schema objects
@@ -101,35 +197,6 @@ public with sharing class JavascriptGenerator
 		return javascriptClass;		
 	}
 
-	// 
-	// By default, we'll use the variable name in the map
-	// but when we are processing an array, we can override the
-	// variable name to handle the interim variable used in the
-	// forEach loop
-	//
-	private String buildFunctionCall(String variableOverride)
-	{
-		if (this.functionParameters == null || this.functionParameters == '')
-			return '()';
-
-		String[] parameters = this.functionParameters.split(';');
-		String parms = '(';
-		String comma = '';
-		for(String p : parameters)
-		{			
-			String variableName = variableMap.get(p);
-			if (variableOverride != null)
-				variableName = variableOverride;
-
-			parms = parms + comma + variableName;
-			comma = ', ';		
-		}
-
-		parms = parms + ')';
-
-		return parms;		
-	}
-
 	//
 	// This method "cleans up" an sObject to a more friendly name
 	//
@@ -148,6 +215,36 @@ public with sharing class JavascriptGenerator
 		return parmName;
 	}
 
+	
+	// 
+	// By default, we'll use the variable name in the map
+	// but when we are processing an array, we can override the
+	// variable name to handle the interim variable used in the
+	// forEach loop
+	//
+	private String buildFunctionCall(String variableOverride)
+	{
+		if (this.functionParameters == null || this.functionParameters == '')
+			return '()';
+
+		String[] parameters = this.functionParameters.split(';');
+		String parms = '(';
+		String comma = '';
+		for(String p : parameters)
+		{			
+			String variableName = variableMap.get(p);
+			System.debug('For parameter name ' + p + ' the variable name is '+variableName);
+			if (variableOverride != null)
+				variableName = variableOverride;
+
+			parms = parms + comma + variableName;
+			comma = ', ';		
+		}
+
+		parms = parms + ')';
+
+		return parms;		
+	}	
 	private static String buildClassDefinition(String className)
 	{
 		return 'function ' + className + ' ()\n{';
@@ -215,97 +312,6 @@ public with sharing class JavascriptGenerator
 
 		return 'null // unknown type not supported: ' + fieldType ;
 
-	}
-
-	public String buildCallTheJavascriptFunction(String functionName)
-	{
-		// if there is only one record, we call the function directly
-		if (this.numRecords == 1)
-			return functionName + buildFunctionCall(null) + ';';
-		else
-		{
-			// 
-			// otherwise we need to wrapper class that loops through the records
-			// 
-			String arrayHelperFunctionName = functionName + 'ArrayHelper';
-
-			String dataChunking = '';
-			for(Integer i=0;i< numberOfDataChunks;i++)
-			{
-				dataChunking = dataChunking + '   ' + DATA_CHUNK_METHOD_NAME_PREFIX + i + '();\n';
-			}
-
-			String javaScript = 
-			       'function ' + arrayHelperFunctionName + '(recs)\n{\n' +
-			       dataChunking + 
-				   '   recs.forEach(function(x, idx)\n' +
-				   '   {\n' +
-				   '      x.' + fieldForAnswer + ' = ' + functionName + buildFunctionCall('x') + ';\n' +
-				   '   });\n' +
-				   '\n' +
-				   '   return recs;\n' + 
-				   '}\n' + 
-
-				   '\n' +
-				   'var XXfinalCalcResultXX = ' + arrayHelperFunctionName + buildFunctionCall(null) + ';\n' +
-				   '\n' + 
-				   'JSON.stringify(XXfinalCalcResultXX);\n';
-
-			return javaScript;    
-		}
-	}
-
-	public String buildData(String variableName, List<SObject> records)
-	{
-		if (records == null || records.size() == 0)
-		{
-			System.debug('ERROR: No data provided.');
-			return null;
-		}
-
-		// we need to get the sObjectName 
-		// and save the mapping for later use when we're ready 
-		// to actually call the method with data in the correct
-		// order...
-		Schema.SObjectType sobjType = records[0].getSObjectType();
-		Schema.DescribeSObjectResult sobjResult = sobjType.getDescribe();
-		String sobjectName = sobjResult.getName();		
-		this.variableMap.put(sobjectName, variableName);
-
-		this.numRecords = records.size();
-
-		String typeDeclaration = defineSobjectWithParams(records[0]);
-
-		String dataDeclaration = '';
-
-		if (numRecords == 1)
-		{
-			dataDeclaration = 'var ' + variableName + ' = new ' + sObjectName + buildDataDeclaration(records[0]);	
-		}
-		else
-		{
-			dataDeclaration = 'var ' + variableName + ' = [];\n';
-			Integer index = 0;
-			Integer chunkIndex = 0;
-			String closeInterimMethod = '';
-			for(Sobject rec : records)
-			{
-				if (Math.mod(index,MAX_CHUNK_SIZE) == 0)
-				{
-					dataDeclaration = dataDeclaration + closeInterimMethod + '\nfunction ' +  DATA_CHUNK_METHOD_NAME_PREFIX + chunkIndex + '()\n{\n';
-					closeInterimMethod = '}\n';
-					chunkIndex++;
-				}
-				dataDeclaration = dataDeclaration + '   ' + variableName + '['+ index + '] = new ' + sObjectName + buildDataDeclaration(rec) + '\n';
-				index++;
-			}
-
-			dataDeclaration = dataDeclaration + closeInterimMethod;
-
-			numberOfDataChunks = chunkIndex;
-		}
-
-		return typeDeclaration + '\n' + dataDeclaration + '\n';		
 	}
 
 	private String defineSobjectWithParams(SObject anObject)

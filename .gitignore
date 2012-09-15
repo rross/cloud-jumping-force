@@ -2,3 +2,25 @@
 .settings
 salesforce.schema
 Referenced Packages
+src/classes/ActualVFPages.cls
+src/classes/ActualVFPages.cls-meta.xml
+src/classes/ActualVFPagesTest.cls
+src/classes/ActualVFPagesTest.cls-meta.xml
+src/classes/DreamforceController.cls
+src/classes/DreamforceController.cls-meta.xml
+src/classes/DreamforceControllerTest.cls
+src/classes/DreamforceControllerTest.cls-meta.xml
+src/classes/IVFPage.cls
+src/classes/IVFPage.cls-meta.xml
+src/classes/MockVFPages.cls
+src/classes/MockVFPages.cls-meta.xml
+src/classes/MockVFPagesTest.cls
+src/classes/MockVFPagesTest.cls-meta.xml
+src/classes/VFPageFactory.cls
+src/classes/VFPageFactory.cls-meta.xml
+src/classes/VFPageFactoryTest.cls
+src/classes/VFPageFactoryTest.cls-meta.xml
+src/pages/mypagea.page
+src/pages/mypagea.page-meta.xml
+src/pages/mypageb.page
+src/pages/mypageb.page-meta.xml
