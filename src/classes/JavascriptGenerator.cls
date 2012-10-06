@@ -31,7 +31,8 @@ public with sharing class JavascriptGenerator
 	// (e.g. For Interim_Weekly_Calc, you would use the 'Total_Bonus__c' 
 	// as the value for the answerField parameter)
 	//
-	public JavascriptGenerator(String functionParms, String answerField, String jsonFieldName)
+	public JavascriptGenerator(String functionParms, String answerField, 
+		String jsonFieldName)
 	{		
 		this.functionParameters = functionParms;
 		this.variableMap = new Map<String, String>();
@@ -65,7 +66,8 @@ public with sharing class JavascriptGenerator
 
 		if (numRecords == 1)
 		{
-			dataDeclaration = 'var ' + variableName + ' = new ' + sObjectName + buildDataDeclaration(records[0]);	
+			dataDeclaration = 'var ' + variableName + ' = new ' + sObjectName + 
+				buildDataDeclaration(records[0]);	
 		}
 		else
 		{
@@ -77,11 +79,13 @@ public with sharing class JavascriptGenerator
 			{
 				if (Math.mod(index,MAX_CHUNK_SIZE) == 0)
 				{
-					dataDeclaration = dataDeclaration + closeInterimMethod + '\nfunction ' +  DATA_CHUNK_METHOD_NAME_PREFIX + chunkIndex + '()\n{\n';
+					dataDeclaration = dataDeclaration + closeInterimMethod + '\nfunction ' +  
+						DATA_CHUNK_METHOD_NAME_PREFIX + chunkIndex + '()\n{\n';
 					closeInterimMethod = '}\n';
 					chunkIndex++;
 				}
-				dataDeclaration = dataDeclaration + '   ' + variableName + '['+ index + '] = new ' + sObjectName + buildDataDeclaration(rec) + '\n';
+				dataDeclaration = dataDeclaration + '   ' + variableName + '['+ index + '] = new ' + 
+					sObjectName + buildDataDeclaration(rec) + '\n';
 				index++;
 			}
 
@@ -151,9 +155,12 @@ public with sharing class JavascriptGenerator
 		{
 			Schema.DescribeFieldResult fieldResult = fieldMap.get(name).getDescribe();
    			
-   			javascriptClass = javascriptClass + buildFieldDefinitionWithValue(fieldResult.getName(), fieldResult.getSOAPType() , anObject.get(name), false) + '\n';
+   			javascriptClass = javascriptClass + buildFieldDefinitionWithValue(
+   				fieldResult.getName(), fieldResult.getSOAPType() , anObject.get(name), 
+   				false) + '\n';
    		   			
-   			System.debug('FieldName: '+fieldResult.getName() + ' Type: ' + fieldResult.getType()  + ' Length: ' + fieldResult.getLength());
+   			System.debug('FieldName: '+fieldResult.getName() + ' Type: ' + 
+   				fieldResult.getType()  + ' Length: ' + fieldResult.getLength());
 		}		
 
 		javascriptClass = javascriptClass + buildClosingClassDefintion();
@@ -187,7 +194,8 @@ public with sharing class JavascriptGenerator
    			
    			javascriptClass = javascriptClass + buildFieldDefinition(fieldResult.getName()) + '\n';
    
-   			System.debug('FieldName: '+fieldResult.getName() + ' Type: ' + fieldResult.getType()  + ' Length: ' + fieldResult.getLength());
+   			System.debug('FieldName: '+fieldResult.getName() + ' Type: ' + fieldResult.getType()  + 
+   				' Length: ' + fieldResult.getLength());
 		}
 
 		javascriptClass = javascriptClass + buildClosingClassDefintion();
@@ -255,12 +263,14 @@ public with sharing class JavascriptGenerator
 		return '   this.'+fieldName+' = null;';
 	}
 
-	private static String buildFieldDefinitionWithValue(String fieldName, Schema.SOAPType fieldType, Object value, Boolean escapeStringValue)
+	private static String buildFieldDefinitionWithValue(String fieldName, Schema.SOAPType fieldType, 
+		Object value, Boolean escapeStringValue)
 	{
 		return '   this.'+fieldName+' = ' + buildFieldValue(fieldType, value, escapeStringValue) + ';';
 	}
 
-	private static String buildFieldDefinititonWithParameter(String fieldName, String paramName, String jsonFieldName)
+	private static String buildFieldDefinititonWithParameter(String fieldName, String paramName, 
+		String jsonFieldName)
 	{
 		if (fieldName == jsonFieldName)
 		{
@@ -276,9 +286,12 @@ public with sharing class JavascriptGenerator
 			return 'null';
 		}
 
-		System.debug(Logginglevel.INFO, '*** TRACE: FieldType: ' + fieldType + ' value: ' + value + ' escape? ' + escapeStringValue); 
+		System.debug(Logginglevel.INFO, '*** TRACE: FieldType: ' + fieldType + ' value: ' + 
+			value + ' escape? ' + escapeStringValue); 
 
-		if (fieldType == Schema.SOAPType.Boolean || fieldType == Schema.SOAPType.Integer || fieldType == Schema.SOAPType.Double)
+		if (fieldType == Schema.SOAPType.Boolean || 
+			fieldType == Schema.SOAPType.Integer || 
+			fieldType == Schema.SOAPType.Double)
 		{
 			return String.valueOf(value);
 		}
@@ -295,14 +308,16 @@ public with sharing class JavascriptGenerator
 		if (fieldType == Schema.SOAPType.Date)
 		{
 			Date theDate = Date.valueOf(value);
-			return 'new Date(' + theDate.year() + ', ' + theDate.month() + ', ' + theDate.day() +  ', 0, 0, 0, 0 )';
+			return 'new Date(' + theDate.year() + ', ' + theDate.month() + ', ' + 
+				theDate.day() +  ', 0, 0, 0, 0 )';
 		}
 
 		if (fieldType == Schema.SOAPType.DateTime)
 		{
 			Datetime theDate = Datetime.valueOf(value);
 			return 'new Date(' + theDate.year() + ', ' + theDate.month() + ', ' + theDate.day() +  ', ' + 
-									theDate.hour() + ', ' + theDate.minute() +', ' + theDate.second() + ', ' + theDate.millisecond() + ' )';
+									theDate.hour() + ', ' + theDate.minute() +', ' + theDate.second() + ', ' + 
+									theDate.millisecond() + ' )';
 		}
 
 		if (fieldType == Schema.SOAPType.Time)
@@ -352,9 +367,11 @@ public with sharing class JavascriptGenerator
 			FieldInfo fieldInfo = internalFieldMap.get(name);
 			if (fieldInfo != null)
 			{				
-				System.debug('FieldName: '+ fieldInfo.fieldName + ' Type: ' + fieldInfo.fieldType + ' ParamName: '+fieldInfo.paramName);
+				System.debug('FieldName: '+ fieldInfo.fieldName + ' Type: ' + 
+					fieldInfo.fieldType + ' ParamName: '+fieldInfo.paramName);
 
-	   			javascriptClass = javascriptClass + buildFieldDefinititonWithParameter(fieldInfo.fieldName, fieldInfo.paramName, this.jsonFieldName ) + '\n';   		   			   			
+	   			javascriptClass = javascriptClass + buildFieldDefinititonWithParameter(
+	   				fieldInfo.fieldName, fieldInfo.paramName, this.jsonFieldName ) + '\n';   		   			   			
 			}
 		}		
 
@@ -411,7 +428,8 @@ public with sharing class JavascriptGenerator
 	}
 
 
-	private static Map<String, FieldInfo> buildInternalFieldMap(Map<String, Schema.SObjectField> fieldMap)
+	private static Map<String, FieldInfo> buildInternalFieldMap(Map<String, 
+		Schema.SObjectField> fieldMap)
 	{
 		Map<String, FieldInfo> internalFieldMap = new Map<String, FieldInfo>();
 		for(String field : fieldMap.keySet())

@@ -96,6 +96,15 @@
         <type>Currency</type>
     </fields>
     <fields>
+        <fullName>Total_Wages__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Wages</label>
+        <precision>10</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <type>Currency</type>
+    </fields>
+    <fields>
         <fullName>Unique_ID__c</fullName>
         <caseSensitive>true</caseSensitive>
         <externalId>true</externalId>
@@ -115,14 +124,27 @@
     <label>Weekly Temp Calc</label>
     <listViews>
         <fullName>All</fullName>
+        <columns>Employee__c</columns>
+        <columns>Total_Bonus__c</columns>
+        <columns>Week_Start_Date__c</columns>
+        <columns>Calculation_Status__c</columns>
+        <columns>Calculation_Error_Message__c</columns>
+        <columns>Data__c</columns>
         <filterScope>Everything</filterScope>
         <label>All</label>
     </listViews>
     <nameField>
+        <displayFormat>WTC-{00000}</displayFormat>
         <label>Interim Weekly Calc Name</label>
-        <type>Text</type>
+        <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Weekly Temp Calc</pluralLabel>
-    <searchLayouts/>
+    <searchLayouts>
+        <customTabListAdditionalFields>Calculation_Status__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Calculation_Error_Message__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Total_Bonus__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Employee__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Data__c</customTabListAdditionalFields>
+    </searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
 </CustomObject>

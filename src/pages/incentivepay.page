@@ -1,0 +1,38 @@
+<apex:page controller="IncentivePayController" >
+    <apex:form >
+        <apex:pageMessages ></apex:pageMessages>
+        <apex:pageBlock >
+            <apex:pageBlockSection columns="1">
+                <apex:inputField value="{! proxy.Incentive_Plan__c}" required="true" />
+                <apex:inputField value="{! proxy.Week_Starting_Date__c }" required="true" />
+                <apex:commandButton value="Prepare Incentive Data" action="{! prepareData}"/>
+                <apex:commandButton value="Send to Heroku" action="{! calculate}" disabled="{! !preparedData}"/>
+            </apex:pageBlockSection>
+            <apex:outputPanel id="resultsSection" rendered="{! calculatedResults }">               
+                <apex:pageBlockSection title="Calculation Results" columns="1">
+                    <apex:pageBlockTable id="calcResults" title="Calculation Results" var="cr" value="{! results }" rendered="{! haveResults }">
+                        <apex:column headerValue="Unique ID">
+                            <apex:outputText value="{! cr.Unique_ID__c }"/>
+                        </apex:column>
+                        <apex:column headerValue="Total Wages" style="text-align: right">
+                                <apex:outputText value="{0, number, 0.00}">
+                                    <apex:param value="{! cr.Total_Wages__c}"/>
+                                </apex:outputText> 
+                        </apex:column>
+                        <apex:column headerValue="Total Bonus" style="text-align: right">
+                                <apex:outputText value="{0, number, 0.00}">
+                                    <apex:param value="{! cr.Total_Bonus__c}"/>
+                                </apex:outputText>                            
+                        </apex:column>
+                        <apex:column headerValue="Calc. Status">
+                            <apex:outputText value="{! cr.Calculation_Status__c}"/>
+                        </apex:column>
+                        <apex:column headerValue="Calc. Error Msg">
+                            <apex:outputText value="{! cr.Calculation_Error_Message__c}"/>
+                        </apex:column>                                                
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+            </apex:outputPanel>            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -114,7 +114,8 @@ public with sharing class IncentivePayManager
 		handleResponse(response);	
 	}
 	
-	private String generateJavascript(String datasource, String function, String answerField, String jsonFieldName, String functionName, List<SObject> dataObjects)
+	private String generateJavascript(String datasource, String function, String answerField, 
+		String jsonFieldName, String functionName, List<SObject> dataObjects)
 	{
 		JavascriptGenerator jg = new JavascriptGenerator(datasource, answerField, jsonFieldName);
 		
@@ -177,7 +178,7 @@ public with sharing class IncentivePayManager
 	private void buildResultTypeDataStructures(SObject aResult)
 	{
 		Schema.SObjectType sobjType = aResult.getSObjectType();
-		System.debug('Building a relationship map for sObjecType of: '+sobjType);
+		System.debug('Building a relationshiop map for sObjecType of: '+sobjType);
 
 		Schema.DescribeSObjectResult sobjResult = sobjType.getDescribe();
 
@@ -489,7 +490,7 @@ public with sharing class IncentivePayManager
 		
 	public class CalcResult
     {
-    	String externalId;
-    	Double bonus;
+    		String externalId;
+    		Double bonus;
     }
 }

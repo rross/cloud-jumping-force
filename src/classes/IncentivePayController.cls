@@ -21,7 +21,8 @@ public with sharing class IncentivePayController
 	{
 		try
 		{
-			incentivePayMgr = new IncentivePayManager(proxy.Incentive_Plan__c, proxy.Week_Starting_Date__c);
+			incentivePayMgr = new IncentivePayManager(proxy.Incentive_Plan__c, 
+				proxy.Week_Starting_Date__c);
 			incentivePayMgr.prepareData();
 			
 			preparedData = true;
@@ -29,7 +30,8 @@ public with sharing class IncentivePayController
 		catch(Exception ex)
 		{
 			System.debug('There was a problem calculating the incentive pay. '+ex.getMessage());
-			ApexPages.addMessage(new ApexPages.message(ApexPages.severity.ERROR, 'An error occurred while processing your request. '+ex.getMessage()+'\n'+ex.getStackTraceString()));
+			ApexPages.addMessage(new ApexPages.message(ApexPages.severity.ERROR, 
+				'An error occurred while processing your request. '+ex.getMessage()+'\n'+ex.getStackTraceString()));
 		}
 		 			
 		return null;		
@@ -43,14 +45,17 @@ public with sharing class IncentivePayController
 			
 			calculatedResults = true;
 		
-			results = [SELECT w.Week_Start_Date__c, w.Unique_ID__c, w.Total_Wages__c, w.Total_Bonus__c, w.Name, w.Id, w.Employee__c, w.Data__c, w.Calculation_Status__c, w.Calculation_Error_Message__c 
+			results = [SELECT w.Week_Start_Date__c, w.Unique_ID__c, w.Total_Wages__c, 
+							  w.Total_Bonus__c, w.Name, w.Id, w.Employee__c, w.Data__c, 
+							  w.Calculation_Status__c, w.Calculation_Error_Message__c 
 			  			 FROM Weekly_Temp_Calc__c w
 			 			WHERE w.Week_Start_Date__c = :proxy.Week_Starting_Date__c];
 		}
 		catch(Exception ex)
 		{
 			System.debug('There was a problem calculating the incentive pay. '+ex.getMessage());
-			ApexPages.addMessage(new ApexPages.message(ApexPages.severity.ERROR, 'An error occurred while processing your request. '+ex.getMessage()+'\n'+ex.getStackTraceString()));
+			ApexPages.addMessage(new ApexPages.message(ApexPages.severity.ERROR, 
+				'An error occurred while processing your request. '+ex.getMessage()+'\n'+ex.getStackTraceString()));
 		}
 		 			
 		return null;
